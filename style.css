@@ -1,0 +1,88 @@
+body {
+    margin: 0;
+    background: #0f172a;
+    color: #fff;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.app {
+    padding: 16px;
+}
+
+.pet-box {
+    text-align: center;
+}
+
+video {
+    width: 260px;
+    height: 260px;
+    object-fit: contain;
+    background: #fff;
+    border-radius: 20px;
+}
+
+.mood-label {
+    margin-top: 10px;
+    font-weight: 700;
+}
+
+.stats {
+    display: flex;
+    justify-content: space-around;
+    margin: 20px 0;
+    font-size: 14px;
+}
+
+.actions {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+}
+
+.actions button {
+    background: #c07f87;
+    border: none;
+    border-radius: 14px;
+    padding: 14px;
+    font-weight: 700;
+    color: #fff;
+}
+
+.planner {
+    margin-top: 25px;
+}
+
+.task-add {
+    display: flex;
+    gap: 8px;
+}
+
+.task-add input {
+    flex: 1;
+    padding: 10px;
+    border-radius: 10px;
+    border: none;
+}
+
+.task-add button {
+    padding: 10px 14px;
+    border-radius: 10px;
+    border: none;
+    background: #22c55e;
+    color: #000;
+}
+
+ul {
+    list-style: none;
+    padding: 0;
+    margin-top: 12px;
+}
+
+li {
+    background: #020617;
+    padding: 10px;
+    border-radius: 10px;
+    margin-bottom: 8px;
+    display: flex;
+    justify-content: space-between;
+}
