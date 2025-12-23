@@ -7,7 +7,7 @@ $TOKEN = getenv("BOT_TOKEN");
 $API_URL = "https://api.telegram.org/bot" . $TOKEN . "/";
 
 // ======================================
-// БАЗОВЫЙ ЛОГ (для отладки на Render)
+// ЛОГ (для Render)
 // ======================================
 file_put_contents(
     "log.txt",
@@ -16,11 +16,9 @@ file_put_contents(
 );
 
 // ======================================
-// ПОЛУЧАЕМ UPDATE ОТ TELEGRAM
+// ПОЛУЧАЕМ UPDATE
 // ======================================
 $raw = file_get_contents("php://input");
-file_put_contents("log.txt", "RAW: " . $raw . "\n", FILE_APPEND);
-
 $update = json_decode($raw, true);
 
 if (!$update) {
@@ -29,7 +27,7 @@ if (!$update) {
 }
 
 // ======================================
-// 1. ОБРАБОТКА WEB APP DATA
+// 1. ДАННЫЕ ИЗ WEB APP
 // ======================================
 if (isset($update["message"]["web_app_data"])) {
 
@@ -38,7 +36,7 @@ if (isset($update["message"]["web_app_data"])) {
 
     sendMessage(
         $chat_id,
-        "📦 Данные из Web App получены:\n\n" . $data
+        "📦 Получены данные из приложения:\n" . $data
     );
 
     http_response_code(200);
@@ -56,8 +54,9 @@ if (isset($update["message"])) {
     // ---------- /start ----------
     if ($text === "/start") {
 
+        // 🔥 КНОПКА В КЛАВИАТУРЕ
         $keyboard = [
-            "inline_keyboard" => [
+            "keyboard" => [
                 [
                     [
                         "text" => "🚀 Открыть NamiPlan",
@@ -66,12 +65,14 @@ if (isset($update["message"])) {
                         ]
                     ]
                 ]
-            ]
+            ],
+            "resize_keyboard" => true,
+            "is_persistent" => true
         ];
 
         sendMessage(
             $chat_id,
-            "Добро пожаловать в NamiPlan 👋\n\nНажми кнопку ниже, чтобы открыть приложение.",
+            "Добро пожаловать в NamiPlan 👋\n\nКнопка приложения теперь внизу 👇",
             $keyboard
         );
     }
@@ -86,7 +87,7 @@ if (isset($update["message"])) {
 }
 
 // ======================================
-// ФУНКЦИЯ ОТПРАВКИ СООБЩЕНИЙ
+// ФУНКЦИЯ ОТПРАВКИ
 // ======================================
 function sendMessage($chat_id, $text, $keyboard = null)
 {
