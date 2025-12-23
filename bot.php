@@ -7,7 +7,7 @@ $TOKEN = getenv("BOT_TOKEN");
 $API_URL = "https://api.telegram.org/bot" . $TOKEN . "/";
 
 // ======================================
-// ЛОГ (для Render)
+// ЛОГ (для Render, можно оставить)
 // ======================================
 file_put_contents(
     "log.txt",
@@ -27,7 +27,7 @@ if (!$update) {
 }
 
 // ======================================
-// 1. ДАННЫЕ ИЗ WEB APP
+// 1. ПРИЁМ ДАННЫХ ИЗ WEB APP
 // ======================================
 if (isset($update["message"]["web_app_data"])) {
 
@@ -36,7 +36,7 @@ if (isset($update["message"]["web_app_data"])) {
 
     sendMessage(
         $chat_id,
-        "📦 Получены данные из приложения:\n" . $data
+        "📦 Данные из приложения получены:\n\n" . $data
     );
 
     http_response_code(200);
@@ -54,42 +54,26 @@ if (isset($update["message"])) {
     // ---------- /start ----------
     if ($text === "/start") {
 
-        // 🔥 КНОПКА В КЛАВИАТУРЕ
-        $keyboard = [
-            "keyboard" => [
-                [
-                    [
-                        "text" => "🚀 Открыть NamiPlan",
-                        "web_app" => [
-                            "url" => "https://namiplan.onrender.com/"
-                        ]
-                    ]
-                ]
-            ],
-            "resize_keyboard" => true,
-            "is_persistent" => true
-        ];
-
         sendMessage(
             $chat_id,
-            "Добро пожаловать в NamiPlan 👋\n\nКнопка приложения теперь внизу 👇",
-            $keyboard
+            "👋 Добро пожаловать в NamiPlan.\n\n" .
+            "Открой приложение через кнопку в интерфейсе Telegram ⬆️"
         );
     }
 
-    // ---------- любое другое сообщение ----------
+    // ---------- любые другие сообщения ----------
     else {
         sendMessage(
             $chat_id,
-            "Ты написал:\n" . $text
+            "ℹ️ Используй кнопку приложения в интерфейсе Telegram для работы с NamiPlan."
         );
     }
 }
 
 // ======================================
-// ФУНКЦИЯ ОТПРАВКИ
+// ФУНКЦИЯ ОТПРАВКИ СООБЩЕНИЙ
 // ======================================
-function sendMessage($chat_id, $text, $keyboard = null)
+function sendMessage($chat_id, $text)
 {
     global $API_URL;
 
@@ -98,10 +82,6 @@ function sendMessage($chat_id, $text, $keyboard = null)
         "text" => $text,
         "parse_mode" => "HTML"
     ];
-
-    if ($keyboard !== null) {
-        $data["reply_markup"] = json_encode($keyboard);
-    }
 
     file_get_contents(
         $API_URL . "sendMessage?" . http_build_query($data)
