@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NamiPlan - Твой питомец-планировщик</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+</head>
+<body>
+    <div class="container">
+        <!-- Шапка с питомцем -->
+        <header class="header">
+            <div class="pet-container">
+                <div class="pet-display">
+                    <video id="petVideo" autoplay loop muted playsinline>
+                        <!-- Видео будет меняться в зависимости от настроения -->
+                    </video>
+                    <div class="pet-mood-indicator">
+                        <div class="mood-bar">
+                            <div class="mood-fill" id="moodFill"></div>
+                        </div>
+                        <span class="mood-text" id="moodText">Спокойный</span>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Основной контент -->
+        <main class="main-content">
+            <!-- Статистика -->
+            <section class="stats">
+                <div class="stat-card">
+                    <i class="fas fa-tasks"></i>
+                    <h3>Задания сегодня</h3>
+                    <p id="todayTasks">0</p>
+                </div>
+                <div class="stat-card">
+                    <i class="fas fa-check-circle"></i>
+                    <h3>Выполнено</h3>
+                    <p id="completedTasks">0</p>
+                </div>
+                <div class="stat-card">
+                    <i class="fas fa-heart"></i>
+                    <h3>Настроение</h3>
+                    <p id="moodPercent">50%</p>
+                </div>
+            </section>
+
+            <!-- Форма добавления задания -->
+            <section class="add-task">
+                <h2><i class="fas fa-plus-circle"></i> Новое задание</h2>
+                <div class="task-form">
+                    <input type="text" id="taskTitle" placeholder="Что нужно сделать?" class="task-input">
+                    <textarea id="taskDescription" placeholder="Описание (необязательно)" class="task-textarea"></textarea>
+                    <input type="datetime-local" id="taskDueDate" class="task-date">
+                    <button id="addTaskBtn" class="btn-primary">
+                        <i class="fas fa-plus"></i> Добавить задание
+                    </button>
+                </div>
+            </section>
+
+            <!-- Список заданий -->
+            <section class="tasks-section">
+                <h2><i class="fas fa-list-check"></i> Мои задания</h2>
+                <div class="task-filters">
+                    <button class="filter-btn active" data-filter="all">Все</button>
+                    <button class="filter-btn" data-filter="today">Сегодня</button>
+                    <button class="filter-btn" data-filter="pending">Невыполненные</button>
+                    <button class="filter-btn" data-filter="completed">Выполненные</button>
+                </div>
+                <div class="tasks-list" id="tasksList">
+                    <!-- Задания будут добавляться здесь -->
+                </div>
+            </section>
+        </main>
+
+        <!-- Футер -->
+        <footer class="footer">
+            <div class="footer-info">
+                <p>Питомец счастлив, когда ты продуктивен! 🐾</p>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Модальное окно -->
+    <div class="modal" id="taskModal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h3 id="modalTitle"></h3>
+            <p id="modalDescription"></p>
+            <div class="modal-actions">
+                <button class="btn-secondary" id="completeTaskBtn">Отметить выполненным</button>
+                <button class="btn-danger" id="deleteTaskBtn">Удалить</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
