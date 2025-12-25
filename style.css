@@ -1,88 +1,456 @@
-body {
+:root {
+    /* Пастельная цветовая палитра */
+    --primary: #A8E6CF;
+    --primary-light: #D4F1F4;
+    --secondary: #FFD3B6;
+    --accent: #FFAAA5;
+    --text: #5D5D5D;
+    --text-light: #8E8E8E;
+    --background: #FAF9F6;
+    --card-bg: #FFFFFF;
+    --shadow: rgba(168, 230, 207, 0.2);
+    --success: #8BC34A;
+    --warning: #FFB74D;
+    --danger: #FF8A80;
+}
+
+* {
     margin: 0;
-    background: #0f172a;
-    color: #fff;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    padding: 0;
+    box-sizing: border-box;
 }
 
-.app {
-    padding: 16px;
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, var(--primary-light) 0%, var(--background) 100%);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 20px;
 }
 
-.pet-box {
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+    background: var(--card-bg);
+    border-radius: 25px;
+    box-shadow: 0 15px 35px var(--shadow);
+    overflow: hidden;
+    min-height: 90vh;
+}
+
+/* Шапка с питомцем */
+.header {
+    background: linear-gradient(135deg, var(--primary) 0%, #88D3CE 100%);
+    padding: 30px 20px;
+    text-align: center;
+    border-radius: 0 0 40px 40px;
+}
+
+.pet-container {
+    max-width: 300px;
+    margin: 0 auto;
+}
+
+.pet-display {
+    position: relative;
+    background: white;
+    border-radius: 20px;
+    padding: 20px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+}
+
+#petVideo {
+    width: 100%;
+    border-radius: 15px;
+    aspect-ratio: 1;
+    object-fit: cover;
+}
+
+.pet-mood-indicator {
+    margin-top: 20px;
+}
+
+.mood-bar {
+    width: 100%;
+    height: 12px;
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 6px;
+    overflow: hidden;
+    margin-bottom: 8px;
+}
+
+.mood-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--danger), var(--warning), var(--success));
+    border-radius: 6px;
+    width: 50%;
+    transition: width 0.5s ease;
+}
+
+.mood-text {
+    font-size: 14px;
+    color: white;
+    font-weight: 600;
+    display: block;
     text-align: center;
 }
 
-video {
-    width: 260px;
-    height: 260px;
-    object-fit: contain;
-    background: #fff;
+/* Основной контент */
+.main-content {
+    padding: 30px;
+}
+
+/* Статистика */
+.stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 15px;
+    margin-bottom: 30px;
+}
+
+.stat-card {
+    background: var(--card-bg);
+    padding: 20px;
+    border-radius: 15px;
+    text-align: center;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+    border: 2px solid var(--primary-light);
+    transition: transform 0.3s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+}
+
+.stat-card i {
+    font-size: 28px;
+    color: var(--accent);
+    margin-bottom: 10px;
+}
+
+.stat-card h3 {
+    font-size: 14px;
+    color: var(--text-light);
+    margin-bottom: 8px;
+}
+
+.stat-card p {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--text);
+}
+
+/* Форма добавления задания */
+.add-task {
+    margin-bottom: 30px;
+    background: var(--primary-light);
+    padding: 25px;
     border-radius: 20px;
 }
 
-.mood-label {
-    margin-top: 10px;
-    font-weight: 700;
-}
-
-.stats {
+.add-task h2 {
+    color: var(--text);
+    margin-bottom: 20px;
     display: flex;
-    justify-content: space-around;
-    margin: 20px 0;
-    font-size: 14px;
+    align-items: center;
+    gap: 10px;
 }
 
-.actions {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 12px;
+.add-task h2 i {
+    color: var(--accent);
 }
 
-.actions button {
-    background: #c07f87;
-    border: none;
-    border-radius: 14px;
-    padding: 14px;
-    font-weight: 700;
-    color: #fff;
-}
-
-.planner {
-    margin-top: 25px;
-}
-
-.task-add {
+.task-form {
     display: flex;
-    gap: 8px;
+    flex-direction: column;
+    gap: 15px;
 }
 
-.task-add input {
-    flex: 1;
-    padding: 10px;
-    border-radius: 10px;
+.task-input, .task-textarea, .task-date {
+    padding: 15px;
+    border: 2px solid var(--primary);
+    border-radius: 12px;
+    font-size: 16px;
+    background: white;
+    color: var(--text);
+    transition: border-color 0.3s ease;
+}
+
+.task-input:focus, .task-textarea:focus, .task-date:focus {
+    outline: none;
+    border-color: var(--accent);
+}
+
+.task-textarea {
+    min-height: 100px;
+    resize: vertical;
+}
+
+/* Кнопки */
+.btn-primary {
+    background: linear-gradient(135deg, var(--accent) 0%, #FF8A94 100%);
+    color: white;
     border: none;
+    padding: 16px 25px;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
-.task-add button {
-    padding: 10px 14px;
-    border-radius: 10px;
-    border: none;
-    background: #22c55e;
-    color: #000;
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(255, 138, 128, 0.3);
 }
 
-ul {
-    list-style: none;
-    padding: 0;
-    margin-top: 12px;
+/* Список заданий */
+.tasks-section h2 {
+    color: var(--text);
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
 }
 
-li {
-    background: #020617;
-    padding: 10px;
-    border-radius: 10px;
-    margin-bottom: 8px;
+.task-filters {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 25px;
+    flex-wrap: wrap;
+}
+
+.filter-btn {
+    padding: 10px 20px;
+    background: var(--primary-light);
+    border: 2px solid var(--primary);
+    border-radius: 20px;
+    color: var(--text);
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.filter-btn.active {
+    background: var(--primary);
+    color: white;
+}
+
+.filter-btn:hover:not(.active) {
+    background: var(--primary);
+    color: white;
+}
+
+.tasks-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.task-item {
+    background: white;
+    padding: 20px;
+    border-radius: 15px;
+    border-left: 5px solid var(--primary);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
     display: flex;
     justify-content: space-between;
+    align-items: center;
+    transition: transform 0.3s ease;
+}
+
+.task-item:hover {
+    transform: translateX(5px);
+}
+
+.task-item.completed {
+    opacity: 0.7;
+    border-left-color: var(--success);
+}
+
+.task-content {
+    flex: 1;
+}
+
+.task-title {
+    font-weight: 600;
+    margin-bottom: 5px;
+    color: var(--text);
+}
+
+.task-description {
+    font-size: 14px;
+    color: var(--text-light);
+    margin-bottom: 8px;
+}
+
+.task-date {
+    font-size: 12px;
+    color: var(--text-light);
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.task-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.checkbox-container {
+    position: relative;
+    cursor: pointer;
+}
+
+.checkbox-container input {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+    height: 0;
+    width: 0;
+}
+
+.checkmark {
+    width: 25px;
+    height: 25px;
+    background: white;
+    border: 2px solid var(--primary);
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.checkmark:hover {
+    background: var(--primary-light);
+}
+
+.checkbox-container input:checked ~ .checkmark {
+    background: var(--success);
+    border-color: var(--success);
+}
+
+.checkbox-container input:checked ~ .checkmark:after {
+    content: '✓';
+    color: white;
+    font-weight: bold;
+}
+
+/* Футер */
+.footer {
+    background: var(--primary-light);
+    padding: 20px;
+    text-align: center;
+    border-radius: 20px 20px 0 0;
+    margin-top: 30px;
+}
+
+.footer-info p {
+    color: var(--text);
+    font-weight: 500;
+}
+
+/* Модальное окно */
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-content {
+    background: white;
+    padding: 30px;
+    border-radius: 20px;
+    max-width: 400px;
+    width: 90%;
+    position: relative;
+}
+
+.close-modal {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    font-size: 24px;
+    cursor: pointer;
+    color: var(--text-light);
+}
+
+.modal-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.btn-secondary {
+    background: var(--primary);
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 10px;
+    cursor: pointer;
+    flex: 1;
+}
+
+.btn-danger {
+    background: var(--danger);
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 10px;
+    cursor: pointer;
+    flex: 1;
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    .stats {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 480px) {
+    .stats {
+        grid-template-columns: 1fr;
+    }
+    
+    .container {
+        padding: 10px;
+    }
+    
+    .main-content {
+        padding: 20px;
+    }
+}
+
+/* Анимации */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.task-item {
+    animation: fadeIn 0.3s ease;
+}
+
+/* Пульсация для важных заданий */
+.task-item.urgent {
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% { box-shadow: 0 0 0 0 rgba(255, 138, 128, 0.4); }
+    70% { box-shadow: 0 0 0 10px rgba(255, 138, 128, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(255, 138, 128, 0); }
 }
