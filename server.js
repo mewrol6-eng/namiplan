@@ -3,6 +3,11 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import crypto from 'crypto';
 import pkg from 'pg';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 dotenv.config();
 const { Pool } = pkg;
@@ -428,6 +433,13 @@ setInterval(async () => {
     console.error('Streak reset error', e);
   }
 }, 60 * 60 * 1000);
+
+
+app.use(express.static(path.join(__dirname, 'dist')));
+
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'dist', 'index.html'));
+});
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Server on ${PORT}`));
