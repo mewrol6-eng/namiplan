@@ -6,11 +6,16 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "start": "node server.js"
   },
   "dependencies": {
     "react": "^18.3.1",
-    "react-dom": "^18.3.1"
+    "react-dom": "^18.3.1",
+    "express": "^4.19.2",
+    "cors": "^2.8.5",
+    "pg": "^8.11.5",
+    "dotenv": "^16.4.5"
   },
   "devDependencies": {
     "@types/react": "^18.3.4",
