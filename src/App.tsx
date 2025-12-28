@@ -19,7 +19,7 @@ type Pet = {
   streak: number;
 };
 
-const BACKEND_URL = 'https://YOUR-BACKEND.onrender.com';
+const BACKEND_URL = 'https://namiplan-backend.onrender.com';
 
 const PET_IMAGES: Record<'angry' | 'calm' | 'happy', string> = {
   angry: '/pet/angry.jpg',
