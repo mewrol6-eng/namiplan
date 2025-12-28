@@ -44,6 +44,13 @@ function checkTelegramAuth(initData) {
   return hmac === hash;
 }
 
+function calcMood(points) {
+  if (points <= -2) return 'angry';
+  if (points <= 0) return 'sad';
+  if (points <= 3) return 'calm';
+  return 'happy';
+}
+
 /* =========================
    API
 ========================= */
@@ -75,6 +82,14 @@ app.post('/auth/telegram', async (req, res) => {
       `,
       [id, username, first_name]
     );
+    await pool.query(
+      `
+      INSERT INTO pets (user_id)
+      VALUES ($1)
+      ON CONFLICT (user_id) DO NOTHING
+      `,
+      [result.rows[0].id]
+    );
     res.json({ user: result.rows[0] });
   } catch (e) {
     console.error(e);
@@ -82,21 +97,25 @@ app.post('/auth/telegram', async (req, res) => {
   }
 });
 
-// GET TASKS
-app.get('/tasks/:telegram_id', async (req, res) => {
+app.get('/pet/:telegram_id', async (req, res) => {
   const telegramId = req.params.telegram_id;
+
   try {
     const u = await pool.query(
       'SELECT id FROM users WHERE telegram_id=$1',
       [telegramId]
     );
-    if (u.rows.length === 0) return res.json([]);
 
-    const t = await pool.query(
-      'SELECT * FROM tasks WHERE user_id=$1 ORDER BY id DESC',
+    if (u.rows.length === 0) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    const p = await pool.query(
+      'SELECT * FROM pets WHERE user_id=$1',
       [u.rows[0].id]
     );
-    res.json(t.rows);
+
+    res.json(p.rows[0]);
   } catch (e) {
     console.error(e);
     res.status(500).json({ error: 'DB error' });
@@ -141,6 +160,33 @@ app.patch('/tasks/:id', async (req, res) => {
       'UPDATE tasks SET status=$1 WHERE id=$2 RETURNING *',
       [status, taskId]
     );
+
+    const petUpdate = await pool.query(
+      `
+      UPDATE pets
+      SET points = points + 1,
+          updated_at = NOW()
+      WHERE user_id = (
+        SELECT user_id FROM tasks WHERE id=$1
+      )
+      RETURNING points
+      `,
+      [taskId]
+    );
+
+    const newMood = calcMood(petUpdate.rows[0].points);
+
+    await pool.query(
+      `
+      UPDATE pets
+      SET mood=$1
+      WHERE user_id = (
+        SELECT user_id FROM tasks WHERE id=$2
+      )
+      `,
+      [newMood, taskId]
+    );
+
     if (t.rows.length === 0) {
       return res.status(404).json({ error: 'Task not found' });
     }
