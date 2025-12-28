@@ -52,6 +52,8 @@ export default function App() {
     tg.ready();
     tg.expand();
 
+    console.log('TG initData:', tg.initData);
+
     fetch(`${BACKEND_URL}/auth/telegram`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -59,6 +61,10 @@ export default function App() {
     })
       .then(res => res.json())
       .then(data => {
+        if (data.error) {
+          console.error('AUTH ERROR:', data.error);
+          return;
+        }
         setUser(data.user);
 
         return Promise.all([
