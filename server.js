@@ -51,6 +51,41 @@ function calcMood(points) {
   return 'happy';
 }
 
+function worsenMood(mood) {
+  if (mood === 'happy') return 'calm';
+  if (mood === 'calm') return 'angry';
+  return 'angry';
+}
+
+function isSameDay(a, b) {
+  if (!a || !b) return false;
+  return a.toDateString() === b.toDateString();
+}
+
+function isYesterday(a, b) {
+  if (!a || !b) return false;
+  const d = new Date(b);
+  d.setDate(d.getDate() - 1);
+  return a.toDateString() === d.toDateString();
+}
+
+function calcLevel(points, streak) {
+  const baseLevel = Math.floor((points || 0) / 5) + 1;
+  const streakBonus = Math.floor((streak || 0) / 3);
+  return Math.max(1, baseLevel + streakBonus);
+}
+
+async function giveRewardIfNotExists(userId, type, value) {
+  await pool.query(
+    `
+    INSERT INTO rewards (user_id, type, value)
+    VALUES ($1, $2, $3)
+    ON CONFLICT DO NOTHING
+    `,
+    [userId, type, value]
+  );
+}
+
 /* =========================
    API
 ========================= */
@@ -161,17 +196,56 @@ app.patch('/tasks/:id', async (req, res) => {
       [status, taskId]
     );
 
+    const task = t.rows[0];
+
+    // DAILY TASK LOGIC
+    if (task.type === 'daily') {
+      const last = task.last_completed_at
+        ? new Date(task.last_completed_at)
+        : null;
+      const now = new Date();
+
+      if (last && isSameDay(last, now)) {
+        return res
+          .status(400)
+          .json({ error: 'Daily task already completed today' });
+      }
+
+      // daily даёт больше очков питомцу
+      await pool.query(
+        `
+        UPDATE pets
+        SET points = points + 2
+        WHERE user_id = (
+          SELECT user_id FROM tasks WHERE id=$1
+        )
+        `,
+        [taskId]
+      );
+
+      await pool.query(
+        `
+        UPDATE tasks
+        SET last_completed_at = NOW()
+        WHERE id=$1
+        `,
+        [taskId]
+      );
+    }
+
+    const pointsToAdd = task.type === 'daily' ? 0 : 1;
+
     const petUpdate = await pool.query(
       `
       UPDATE pets
-      SET points = points + 1,
+      SET points = points + $1,
           updated_at = NOW()
       WHERE user_id = (
-        SELECT user_id FROM tasks WHERE id=$1
+        SELECT user_id FROM tasks WHERE id=$2
       )
       RETURNING points
       `,
-      [taskId]
+      [pointsToAdd, taskId]
     );
 
     const newMood = calcMood(petUpdate.rows[0].points);
@@ -187,6 +261,103 @@ app.patch('/tasks/:id', async (req, res) => {
       [newMood, taskId]
     );
 
+    await pool.query(
+      `
+      UPDATE pets
+      SET last_action_at = NOW()
+      WHERE user_id = (
+        SELECT user_id FROM tasks WHERE id=$1
+      )
+      `,
+      [taskId]
+    );
+
+    const today = new Date();
+
+    const petRow = await pool.query(
+      `
+      SELECT streak, last_streak_date
+      FROM pets
+      WHERE user_id = (
+        SELECT user_id FROM tasks WHERE id=$1
+      )
+      `,
+      [taskId]
+    );
+
+    if (petRow.rows.length > 0) {
+      const { streak, last_streak_date } = petRow.rows[0];
+      let newStreak = streak || 0;
+
+      if (!last_streak_date) {
+        newStreak = 1;
+      } else if (isSameDay(new Date(last_streak_date), today)) {
+        // streak уже засчитан сегодня
+      } else if (isYesterday(new Date(last_streak_date), today)) {
+        newStreak = streak + 1;
+      } else {
+        newStreak = 1;
+      }
+
+      await pool.query(
+        `
+        UPDATE pets
+        SET streak=$1,
+            last_streak_date=CURRENT_DATE
+        WHERE user_id = (
+          SELECT user_id FROM tasks WHERE id=$2
+        )
+        `,
+        [newStreak, taskId]
+      );
+
+      const petForLevel = await pool.query(
+        `
+        SELECT points, streak
+        FROM pets
+        WHERE user_id = (
+          SELECT user_id FROM tasks WHERE id=$1
+        )
+        `,
+        [taskId]
+      );
+
+      if (petForLevel.rows.length > 0) {
+        const { points, streak } = petForLevel.rows[0];
+        const newLevel = calcLevel(points, streak);
+
+        await pool.query(
+          `
+          UPDATE pets
+          SET level=$1
+          WHERE user_id = (
+            SELECT user_id FROM tasks WHERE id=$2
+          )
+          `,
+          [newLevel, taskId]
+        );
+
+        const uidRes = await pool.query(
+          `SELECT user_id FROM tasks WHERE id=$1`,
+          [taskId]
+        );
+
+        if (uidRes.rows.length) {
+          const userId = uidRes.rows[0].user_id;
+
+          // награда за уровень — каждые 5 уровней
+          if (newLevel > 0 && newLevel % 5 === 0) {
+            await giveRewardIfNotExists(userId, 'level', newLevel);
+          }
+
+          // награда за streak — каждые 7 дней
+          if (newStreak > 0 && newStreak % 7 === 0) {
+            await giveRewardIfNotExists(userId, 'streak', newStreak);
+          }
+        }
+      }
+    }
+
     if (t.rows.length === 0) {
       return res.status(404).json({ error: 'Task not found' });
     }
@@ -196,6 +367,67 @@ app.patch('/tasks/:id', async (req, res) => {
     res.status(500).json({ error: 'DB error' });
   }
 });
+
+
+setInterval(async () => {
+  try {
+    await pool.query(
+      `
+      UPDATE tasks
+      SET status='new'
+      WHERE type='daily'
+        AND (
+          last_completed_at IS NULL
+          OR last_completed_at < NOW() - INTERVAL '1 day'
+        )
+      `
+    );
+  } catch (e) {
+    console.error('Daily reset error', e);
+  }
+}, 60 * 60 * 1000); // сброс daily раз в час
+
+setInterval(async () => {
+  try {
+    const res = await pool.query(
+      `
+      SELECT id, mood
+      FROM pets
+      WHERE last_action_at < NOW() - INTERVAL '24 hours'
+      `
+    );
+
+    for (const pet of res.rows) {
+      const newMood = worsenMood(pet.mood);
+
+      await pool.query(
+        `
+        UPDATE pets
+        SET mood=$1,
+            last_action_at = NOW()
+        WHERE id=$2
+        `,
+        [newMood, pet.id]
+      );
+    }
+  } catch (e) {
+    console.error('Auto mood error', e);
+  }
+}, 60 * 60 * 1000); // проверка каждый час
+
+setInterval(async () => {
+  try {
+    await pool.query(
+      `
+      UPDATE pets
+      SET streak = 0
+      WHERE last_streak_date < CURRENT_DATE - INTERVAL '1 day'
+      `
+    );
+  } catch (e) {
+    console.error('Streak reset error', e);
+  }
+}, 60 * 60 * 1000);
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Server on ${PORT}`));
