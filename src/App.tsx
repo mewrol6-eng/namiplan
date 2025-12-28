@@ -37,23 +37,29 @@ export default function App() {
         return fetch(`${BACKEND_URL}/tasks/${data.user.telegram_id}`);
       })
       .then(res => res.json())
-      .then(tasks => {
-        setTasks(tasks);
+      .then(ts => {
+        setTasks(ts);
         setLoading(false);
       })
-      .catch(err => {
-        console.error(err);
-        setLoading(false);
-      });
+      .catch(() => setLoading(false));
   }, []);
 
-  if (loading) {
-    return <div style={{ padding: 20 }}>Загрузка...</div>;
+  function markDone(taskId: number) {
+    fetch(`${BACKEND_URL}/tasks/${taskId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status: 'done' })
+    })
+      .then(res => res.json())
+      .then(updated => {
+        setTasks(prev =>
+          prev.map(t => (t.id === updated.id ? updated : t))
+        );
+      });
   }
 
-  if (!user) {
-    return <div style={{ padding: 20 }}>Ошибка авторизации</div>;
-  }
+  if (loading) return <div style={{ padding: 20 }}>Загрузка...</div>;
+  if (!user) return <div style={{ padding: 20 }}>Ошибка авторизации</div>;
 
   return (
     <div style={{ padding: 20 }}>
@@ -63,10 +69,31 @@ export default function App() {
 
       {tasks.length === 0 && <p>Задач пока нет</p>}
 
-      <ul>
+      <ul style={{ padding: 0 }}>
         {tasks.map(task => (
-          <li key={task.id}>
-            {task.title} — <b>{task.status}</b>
+          <li
+            key={task.id}
+            style={{
+              listStyle: 'none',
+              marginBottom: 10,
+              padding: 10,
+              border: '1px solid #ddd',
+              borderRadius: 8
+            }}
+          >
+            <div>
+              <b>{task.title}</b>
+            </div>
+            <div>Статус: {task.status}</div>
+
+            {task.status !== 'done' && (
+              <button
+                onClick={() => markDone(task.id)}
+                style={{ marginTop: 6 }}
+              >
+                ✅ Выполнить
+              </button>
+            )}
           </li>
         ))}
       </ul>
