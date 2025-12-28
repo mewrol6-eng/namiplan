@@ -3,7 +3,6 @@ CREATE TABLE IF NOT EXISTS users (
   telegram_id BIGINT UNIQUE NOT NULL,
   username TEXT,
   first_name TEXT,
-  role TEXT DEFAULT 'user',
   created_at TIMESTAMP DEFAULT NOW()
 );
 
