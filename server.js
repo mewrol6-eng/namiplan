@@ -94,9 +94,6 @@ async function giveRewardIfNotExists(userId, type, value) {
 /* =========================
    API
 ========================= */
-app.get('/', (req, res) => {
-  res.send('Backend is working');
-});
 
 // AUTH
 app.post('/auth/telegram', async (req, res) => {
